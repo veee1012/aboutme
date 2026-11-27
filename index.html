@@ -5,18 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>黄格 // 游戏策划作品集</title>
   <style>
-    /* --- 纯 CSS 科技准星鼠标 --- */
-    /* 为了让光标生效，我们需要对 html/body 设置特定光标，并在特定元素上覆盖 */
-    html, body {
-      cursor: crosshair; /* 默认是一个类似准星的光标 */
-    }
-    
-    /* 针对可点击元素，我们可以用自定义 SVG 或者系统自带的小手 */
-    a, button, .card, .rail nav a {
-      cursor: pointer !important;
-    }
-
-    /* --- 以下是你的原有 CSS --- */
     :root {
       --bg-canvas:   #0f1115;
       --bg-surface:  #181b20;
@@ -45,6 +33,22 @@
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
     html, body { height: 100%; }
+
+    /* ============================================================
+       方舟风格机械手鼠标指针 (纯SVG Base64代码)
+       ============================================================ */
+    
+    /* 默认状态：白色机械手，青色发光节点 */
+    body, .scope, .main, .rail, .modal-content, .dossier {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M10,2 L10,16 L4,16 C3,16 2,17 2,18 C2,19 3,20 4,20 L12,20 L12,26 C12,28 14,30 16,30 L24,30 C26,30 28,28 28,26 L28,16 C28,14 26,12 24,12 L16,12 L16,2 C16,1 15,0 14,0 C12,0 10,1 10,2 Z' fill='%23ffffff' stroke='%2318d1ff' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%2318d1ff'/%3E%3Ccircle cx='16' cy='20' r='1.5' fill='%2318d1ff'/%3E%3Ccircle cx='16' cy='24' r='1.5' fill='%2318d1ff'/%3E%3C/svg%3E") 10 2, auto !important;
+    }
+
+    /* 悬停/点击状态：青色机械手，白色节点 */
+    a, button, .card, .card-link, nav a, .modal-close {
+      cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cpath d='M10,2 L10,16 L4,16 C3,16 2,17 2,18 C2,19 3,20 4,20 L12,20 L12,26 C12,28 14,30 16,30 L24,30 C26,30 28,28 28,26 L28,16 C28,14 26,12 24,12 L16,12 L16,2 C16,1 15,0 14,0 C12,0 10,1 10,2 Z' fill='%2318d1ff' stroke='%23ffffff' stroke-width='1.5'/%3E%3Ccircle cx='16' cy='16' r='1.5' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='20' r='1.5' fill='%23ffffff'/%3E%3Ccircle cx='16' cy='24' r='1.5' fill='%23ffffff'/%3E%3C/svg%3E") 10 2, pointer !important;
+    }
+
+    /* ============================================================ */
 
     body {
       margin: 0;
@@ -86,6 +90,7 @@
     }
 
     a { color: inherit; text-decoration: none; }
+    .card { cursor: pointer; }
     
     a:focus-visible, button:focus-visible {
       outline: 1px solid var(--accent);
@@ -137,16 +142,91 @@
     .dossier dd.school-highlight { font-size: 1.2rem; color: var(--fg-default); }
     .dossier dd.school-highlight span { font-size: 0.7rem; background: var(--accent); color: #000; padding: 0.1rem 0.3rem; border-radius: 2px; margin-left: 0.4rem; vertical-align: middle; font-weight: 700; letter-spacing: 0.08em; }
 
-    /* 明日方舟卡片 */
-    .featured-ark { flex: 0 0 420px; width: 420px; background: rgba(24, 27, 32, 0.6); border: 1px solid var(--border-strong); border-radius: 6px; padding: 1rem; position: relative; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); overflow: hidden; backdrop-filter: blur(8px); }
-    .featured-ark::before { content: ""; position: absolute; inset: -50%; background-image: radial-gradient(circle, var(--accent) 1px, transparent 1px), radial-gradient(circle, var(--fg-default) 1px, transparent 1px); background-size: 50px 50px, 70px 70px; background-position: 0 0, 25px 25px; opacity: 0.15; transition: opacity 0.4s ease, transform 4s linear; pointer-events: none; z-index: 0; }
-    .featured-ark::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(24, 209, 255, 0.1) 50%, rgba(255,255,255,0) 100%); transform: rotate(45deg); transition: all 0.6s ease; opacity: 0; pointer-events: none; z-index: 1; }
-    .featured-ark:hover { transform: translateY(-8px) scale(1.02); border-color: var(--accent); box-shadow: 0 15px 40px var(--accent-glow), inset 0 0 20px rgba(24, 209, 255, 0.1); }
-    .featured-ark:hover::before { opacity: 0.4; transform: rotate(15deg) scale(1.1); }
-    .featured-ark:hover::after { opacity: 1; transform: rotate(45deg) translateY(50%); }
-    .ark-img-wrapper { position: relative; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; background: #000; overflow: hidden; z-index: 2; }
-    .ark-img-wrapper img { width: 100%; height: auto; display: block; transition: transform 0.5s ease; }
-    .featured-ark:hover .ark-img-wrapper img { transform: scale(1.05); }
+    /* ============================================================
+       重点改造：明日方舟动态特效卡片
+       ============================================================ */
+    .featured-ark { 
+      flex: 0 0 420px; 
+      width: 420px;
+      background: rgba(24, 27, 32, 0.6);
+      border: 1px solid var(--border-strong);
+      border-radius: 6px;
+      padding: 1rem;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      backdrop-filter: blur(8px);
+      cursor: crosshair;
+    }
+
+    /* 卡片周围的星尘粒子 */
+    .featured-ark::before {
+      content: "";
+      position: absolute;
+      inset: -50%;
+      background-image: 
+        radial-gradient(circle, var(--accent) 1px, transparent 1px),
+        radial-gradient(circle, var(--fg-default) 1px, transparent 1px);
+      background-size: 50px 50px, 70px 70px;
+      background-position: 0 0, 25px 25px;
+      opacity: 0.15;
+      transition: opacity 0.4s ease, transform 4s linear;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* 悬停扫光特效 */
+    .featured-ark::after {
+      content: "";
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(24, 209, 255, 0.1) 50%, rgba(255,255,255,0) 100%);
+      transform: rotate(45deg);
+      transition: all 0.6s ease;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .featured-ark:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--accent);
+      box-shadow: 0 15px 40px var(--accent-glow), inset 0 0 20px rgba(24, 209, 255, 0.1);
+    }
+
+    .featured-ark:hover::before {
+      opacity: 0.4;
+      transform: rotate(15deg) scale(1.1);
+    }
+
+    .featured-ark:hover::after {
+      opacity: 1;
+      transform: rotate(45deg) translateY(50%);
+    }
+
+    .ark-img-wrapper { 
+      position: relative; 
+      border: 1px solid rgba(255,255,255,0.1); 
+      border-radius: 4px; 
+      background: #000; 
+      overflow: hidden; 
+      z-index: 2;
+    }
+    
+    /* 图片放大过渡效果 */
+    .ark-img-wrapper img { 
+      width: 100%; 
+      height: auto; 
+      display: block; 
+      transition: transform 0.5s ease;
+    }
+    
+    .featured-ark:hover .ark-img-wrapper img {
+      transform: scale(1.05);
+    }
+
     .ark-meta { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.2rem; position: relative; z-index: 2; }
     .ark-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .ark-tags .tag { background: rgba(0,0,0,0.4); transition: all 0.3s ease; }
@@ -154,13 +234,15 @@
     .ark-meta p { margin: 0; font-size: 0.8rem; line-height: 1.7; color: var(--fg-muted); transition: color 0.3s ease; }
     .featured-ark:hover .ark-meta p { color: var(--fg-default); }
 
+    /* ============================================================ */
+
     /* 模块标题 */
     .section-head { display: flex; align-items: baseline; gap: 1rem; margin: 3rem 0 1.5rem; }
     .section-head::before { content: ""; width: 24px; height: 3px; background: var(--accent); flex-shrink: 0; transform: translateY(-4px); }
     .section-head h2 { margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: 0.2em; color: var(--fg-default); }
     .section-head small { font-size: 0.8rem; color: var(--fg-faint); letter-spacing: 0.15em; }
 
-    /* 岗位匹配优势 */
+    /* 岗位匹配优势卡片 */
     .match-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
     .match-card { background: var(--bg-surface); padding: 1.5rem; border: 1px solid var(--border-muted); border-radius: 4px; border-top: 3px solid var(--accent); }
     .match-card h4 { color: var(--fg-default); margin: 0 0 1rem; font-size: 1.1rem; letter-spacing: 0.05em; }
@@ -265,6 +347,43 @@
     .highlight-box::before { content: "“"; top: 5px; left: 10px; }
     .highlight-box::after { content: "”"; bottom: -15px; right: 10px; }
 
+    /* 图片放大灯箱效果 */
+    .lightbox-overlay {
+      position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(8px); z-index: 99999;
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+      cursor: zoom-out;
+    }
+    .lightbox-overlay.active { opacity: 1; pointer-events: auto; }
+    .lightbox-overlay img {
+      max-width: 90vw; max-height: 90vh; object-fit: contain;
+      border-radius: 4px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);
+      transform: scale(0.95); transition: transform 0.3s ease;
+    }
+    .lightbox-overlay.active img { transform: scale(1); }
+    /* 给所有要放大的图片加个放大镜鼠标提示 */
+    .ark-img-wrapper img, .card-media img, .modal-body img { cursor: zoom-in !important; }
+
+    /* 试玩大按钮 */
+    .play-btn {
+      display: inline-block;
+      padding: 1rem 2.5rem;
+      background: var(--accent);
+      color: #000;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      border-radius: 4px;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: all 0.3s ease;
+    }
+    .play-btn:hover {
+      background: #fff;
+      transform: translateY(-3px);
+      box-shadow: 0 6px 25px rgba(255, 255, 255, 0.4);
+    }
+
     @media (max-width: 1050px) {
       .top-section { flex-direction: column; }
       .featured-ark { flex: 1; width: 100%; }
@@ -329,8 +448,8 @@
       </h1>
       <div class="hud-status">
         <div><span class="on">●</span> OPEN TO INTERNSHIP</div>
-        <div>游戏策划实习生 / 校招 · 系统 / 数值 / 关卡优先</div>
-        <div class="time-tag">方舟 Lv120 / Steam 模拟经营全成就</div>
+        <div>游戏策划实习生 · 系统 / 数值 / 关卡优先</div>
+        <div class="time-tag">明日方舟 7 年资深玩家 / PC 1000h+ · 主机 500h+</div>
         <div>2028 届 // 1–4 月线下实习</div>
       </div>
     </header>
@@ -383,11 +502,12 @@
           </div>
           <div class="ark-meta">
             <div class="ark-tags">
-              <span class="tag" style="color:var(--accent); border-color:var(--accent);">入职 4.5 年 / Lv120</span>
+              <span class="tag" style="color:var(--accent); border-color:var(--accent);">2019-11-18 注册</span>
+              <span class="tag">登录超 1000 天</span>
+              <span class="tag">Lv120 满级</span>
               <span class="tag">干员 396 / 主线全通</span>
-              <span class="tag">深谙养成与配队</span>
             </div>
-            <p>《明日方舟》开服级别深度玩家，2019-11-18 入职。深谙长线养成与数值成长曲线。</p>
+            <p>《明日方舟》开服级别深度玩家。2019-11-18 注册成为博士，累计登录超 1000 天，120 级满级。深谙长线养成、数值成长与配队策略。</p>
           </div>
         </div>
 
@@ -438,7 +558,11 @@
               <span class="tag">系统框架</span>
               <span class="tag">数值设计</span>
             </div>
-            <div class="card-link">OPEN DOSSIER →</div>
+            <!-- 修改了底部链接，分为看详情和直接玩 -->
+            <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: auto;">
+              <div class="card-link">OPEN DOSSIER →</div>
+              <a href="https://veee1012.github.io/Search-the-phone/" target="_blank" rel="noopener" class="card-link" style="color: var(--warning); border-bottom-color: transparent;" onmouseover="this.style.borderBottomColor='var(--warning)'" onmouseout="this.style.borderBottomColor='transparent'" onclick="event.stopPropagation()">▶ PLAY NOW</a>
+            </div>
           </div>
         </article>
 
@@ -550,7 +674,7 @@
         </div>
         <div class="skill-item">
           <strong style="color: var(--accent); font-size: 1rem;">AI 工具（核心优势）</strong>
-          <span>熟练运用<b>提示词工程（Prompt Engineering）</b>精准控制 AI 产出，能使用 Coze 独立搭建复杂小游戏逻辑与数值框架。保持极高的技术敏锐度，<b>乐于学习并快速掌握各类新型 AI 工具</b>（文本/图像/代码生成等）并将其融入工作流，大幅提升策划与落地执行效率。</span>
+          <span>熟练运用<b>结构化 Prompt 与 CoT 思维链</b>精准约束大模型输出，能基于 Coze 独立编排<b>工作流 (Workflow) 与调度 Agent</b>，搭建复杂游戏逻辑与数值框架。具备 AI 前沿视野，善于将<b>多模态 AIGC</b>（文本/图像/代码生成）深度集成至工作流，赋能业务全链路提效。</span>
         </div>
         <div class="skill-item">
           <strong>语言能力</strong>
@@ -575,7 +699,7 @@
         </div>
         <div>
           <dt>PORTFOLIO / 作品</dt>
-          <dd><a href="https://veeel012.github.io/huangge-portfolio/" target="_blank" rel="noopener">「查手机」小游戏游玩链接</a></dd>
+          <dd><a href="https://veee1012.github.io/Search-the-phone/" target="_blank" rel="noopener">「查手机」小游戏游玩链接</a></dd>
         </div>
       </dl>
     </section>
@@ -592,6 +716,11 @@
     <button class="modal-close" id="closeModal">×</button>
     <div id="modalDynamicContent"></div>
   </div>
+</div>
+
+<!-- 图片放大灯箱 -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <img src="" alt="放大查看" id="lightboxImg">
 </div>
 
 <script>
@@ -646,6 +775,11 @@
             <div class="img-row">
               <img src="./images/game-1.webp" alt="结算界面">
               <img src="./images/game-2.webp" alt="查口袋弹窗">
+            </div>
+
+            <!-- 弹窗内增加试玩大按钮 -->
+            <div style="text-align: center; margin-top: 3rem; padding-top: 2rem; border-top: 1px dashed var(--border-muted);">
+              <a href="https://veee1012.github.io/Search-the-phone/" target="_blank" rel="noopener" class="play-btn">▶ 立即试玩「查手机」</a>
             </div>
           </div>
         `
@@ -885,6 +1019,30 @@
       requestAnimationFrame(animate);
     }
     animate();
+  })();
+
+  // --- 4. 图片点击放大 (Lightbox) ---
+  (function() {
+    const overlay = document.getElementById('lightboxOverlay');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const images = document.querySelectorAll('.ark-img-wrapper img, .card-media img, .modal-body img');
+
+    images.forEach(img => {
+      img.addEventListener('click', function(e) {
+        e.stopPropagation(); 
+        lightboxImg.src = this.src;
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      });
+    });
+
+    function closeLightbox() {
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+      setTimeout(() => { lightboxImg.src = ''; }, 300);
+    }
+
+    overlay.addEventListener('click', closeLightbox);
   })();
 </script>
 </body>
