@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>黄格 // 游戏策划作品集</title>
+  <style>
+    /* --- 纯 CSS 科技准星鼠标 --- */
+    /* 为了让光标生效，我们需要对 html/body 设置特定光标，并在特定元素上覆盖 */
+    html, body {
+      cursor: crosshair; /* 默认是一个类似准星的光标 */
+    }
+    
+    /* 针对可点击元素，我们可以用自定义 SVG 或者系统自带的小手 */
+    a, button, .card, .rail nav a {
+      cursor: pointer !important;
+    }
+
+    /* --- 以下是你的原有 CSS --- */
+    :root {
+      --bg-canvas:   #0f1115;
+      --bg-surface:  #181b20;
+      --bg-elevated: #1f242b;
+      --bg-media:    #0a0c0f;
+      
+      --fg-default:  #ffffff;
+      --fg-muted:    #b0b8c4;
+      --fg-faint:    #6b7585;
+      
+      --border-muted:  #2a303a;
+      --border-strong: #3b4451;
+      
+      --accent:      #18d1ff;
+      --accent-glow: rgba(24, 209, 255, 0.2);
+      --warning:     #ffd800;
+      
+      --nav-w: 280px;
+      --gap:   1.5rem;
+      --font-stack: "Inter", "Roboto Condensed", -apple-system,
+                    BlinkMacSystemFont, "Segoe UI", "Helvetica Neue",
+                    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+                    sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body { height: 100%; }
+
+    body {
+      margin: 0;
+      background: var(--bg-canvas);
+      color: var(--fg-muted);
+      font-family: var(--font-stack);
+      font-size: 16px;
+      letter-spacing: 0.03em;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* 全屏 CRT 扫描线 */
+    body::after {
+      content: " ";
+      display: block;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02));
+      z-index: 10000;
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+      opacity: 0.6;
+    }
+
+    /* 粒子背景 */
+    #ark-particles {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 50%, rgba(24, 209, 255, 0.08) 0%, transparent 65%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    
+    a:focus-visible, button:focus-visible {
+      outline: 1px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .scope { min-height: 100vh; display: flex; }
+    section { scroll-margin-top: 2rem; }
+
+    /* 左侧导航 */
+    .rail { width: var(--nav-w); flex-shrink: 0; padding: 2.5rem 1.5rem; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; justify-content: space-between; background: rgba(24, 27, 32, 0.7); backdrop-filter: blur(12px); border-right: 1px solid var(--border-muted); z-index: 10; }
+    .rail-brand { font-size: 0.85rem; letter-spacing: 0.2em; color: var(--fg-faint); border-bottom: 1px solid var(--border-muted); padding-bottom: 1.2rem; margin-bottom: 2rem; }
+    .rail-brand strong { display: block; color: var(--fg-default); font-size: 1.1rem; letter-spacing: 0.15em; margin-top: 0.5rem; }
+    
+    .rail nav a { position: relative; overflow: hidden; display: flex; align-items: center; gap: 1rem; padding: 0.9rem 1rem; margin-bottom: 0.25rem; color: var(--fg-muted); font-size: 0.9rem; letter-spacing: 0.12em; border-left: 3px solid transparent; transition: all 200ms ease; }
+    .rail nav a::before { content: attr(data-code); font-size: 0.8rem; color: var(--fg-faint); min-width: 1.8rem; font-weight: 600; transition: color 200ms ease; }
+    .rail nav a::after { content: ""; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(24,209,255,0.15), transparent); transition: left 400ms ease; z-index: 1; }
+    .rail nav a:hover::after { left: 100%; }
+    .rail nav a:hover, .rail nav a.active { color: var(--fg-default); background: rgba(24, 209, 255, 0.08); border-left-color: var(--accent); box-shadow: inset 0 0 20px rgba(24, 209, 255, 0.05); }
+    .rail nav a:hover::before, .rail nav a.active::before { color: var(--accent); }
+
+    .rail-foot { font-size: 0.75rem; color: var(--fg-faint); letter-spacing: 0.1em; line-height: 2; }
+    
+    .main { flex: 1; padding: 3rem 2.5rem 5rem; max-width: 1240px; position: relative; z-index: 1; }
+    
+    /* 顶部状态栏 */
+    .hud { position: relative; display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1px solid var(--border-muted); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+    .hud::after { content: ""; position: absolute; right: 0; bottom: 0; width: 350px; height: 60px; pointer-events: none; background-image: radial-gradient(circle, var(--accent) 1.5px, transparent 1.5px); background-size: 8px 8px; opacity: 0.2; -webkit-mask-image: linear-gradient(to left, #000 10%, transparent 90%); mask-image: linear-gradient(to left, #000 10%, transparent 90%); }
+    
+    /* Glitch 效果标题 */
+    .hud h1 { margin: 0; font-size: clamp(2rem, 4vw, 2.8rem); font-weight: 700; letter-spacing: 0.05em; line-height: 1.2; color: var(--fg-default); position: relative; display: inline-block; }
+    .hud h1:hover { animation: glitch-skew 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite; text-shadow: 0.05em 0 0 rgba(255,0,0,0.75), -0.025em -0.05em 0 rgba(0,255,0,0.75), 0.025em 0.05em 0 rgba(0,0,255,0.75); }
+    @keyframes glitch-skew { 0% { transform: skew(0deg); } 20% { transform: skew(-2deg); } 40% { transform: skew(2deg); } 60% { transform: skew(-1deg); } 80% { transform: skew(1deg); } 100% { transform: skew(0deg); } }
+    
+    .hud h1 span { display: block; font-size: 0.85rem; font-weight: 500; color: var(--accent); letter-spacing: 0.3em; margin-bottom: 0.6rem; }
+    .hud-status { font-size: 0.8rem; letter-spacing: 0.15em; color: var(--fg-muted); text-align: right; line-height: 2; white-space: nowrap; }
+    .hud-status .on { color: var(--accent); font-weight: bold; }
+    .hud-status .time-tag { color: var(--warning); font-weight: 600; font-size: 0.85rem; }
+
+    /* 档案与名片双栏 */
+    .top-section { display: flex; gap: 2rem; align-items: stretch; margin-bottom: 3rem; }
+    .dossier-wrapper { flex: 1; min-width: 0; }
+    .dossier { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem 2rem; margin: 0; padding: 1.8rem 2rem; background: rgba(24, 27, 32, 0.8); border: 1px solid var(--border-strong); position: relative; border-radius: 4px; box-shadow: 0 8px 30px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.02); backdrop-filter: blur(8px); height: 100%; }
+    .dossier::after { content: ""; position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 24px 24px 0; border-color: transparent var(--accent) transparent transparent; opacity: 0.9; }
+    .dossier dt { margin-bottom: 0.4rem; font-size: 0.75rem; letter-spacing: 0.2em; color: var(--fg-faint); }
+    .dossier dd { margin: 0; font-size: 1rem; letter-spacing: 0.05em; font-weight: 600; color: var(--fg-default); }
+    
+    .dossier dd.highlight { color: var(--accent); }
+    .dossier dd.school-highlight { font-size: 1.2rem; color: var(--fg-default); }
+    .dossier dd.school-highlight span { font-size: 0.7rem; background: var(--accent); color: #000; padding: 0.1rem 0.3rem; border-radius: 2px; margin-left: 0.4rem; vertical-align: middle; font-weight: 700; letter-spacing: 0.08em; }
+
+    /* 明日方舟卡片 */
+    .featured-ark { flex: 0 0 420px; width: 420px; background: rgba(24, 27, 32, 0.6); border: 1px solid var(--border-strong); border-radius: 6px; padding: 1rem; position: relative; transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94); box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6); overflow: hidden; backdrop-filter: blur(8px); }
+    .featured-ark::before { content: ""; position: absolute; inset: -50%; background-image: radial-gradient(circle, var(--accent) 1px, transparent 1px), radial-gradient(circle, var(--fg-default) 1px, transparent 1px); background-size: 50px 50px, 70px 70px; background-position: 0 0, 25px 25px; opacity: 0.15; transition: opacity 0.4s ease, transform 4s linear; pointer-events: none; z-index: 0; }
+    .featured-ark::after { content: ""; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(24, 209, 255, 0.1) 50%, rgba(255,255,255,0) 100%); transform: rotate(45deg); transition: all 0.6s ease; opacity: 0; pointer-events: none; z-index: 1; }
+    .featured-ark:hover { transform: translateY(-8px) scale(1.02); border-color: var(--accent); box-shadow: 0 15px 40px var(--accent-glow), inset 0 0 20px rgba(24, 209, 255, 0.1); }
+    .featured-ark:hover::before { opacity: 0.4; transform: rotate(15deg) scale(1.1); }
+    .featured-ark:hover::after { opacity: 1; transform: rotate(45deg) translateY(50%); }
+    .ark-img-wrapper { position: relative; border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; background: #000; overflow: hidden; z-index: 2; }
+    .ark-img-wrapper img { width: 100%; height: auto; display: block; transition: transform 0.5s ease; }
+    .featured-ark:hover .ark-img-wrapper img { transform: scale(1.05); }
+    .ark-meta { display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1.2rem; position: relative; z-index: 2; }
+    .ark-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .ark-tags .tag { background: rgba(0,0,0,0.4); transition: all 0.3s ease; }
+    .featured-ark:hover .ark-tags .tag { border-color: var(--fg-faint); color: var(--fg-default); }
+    .ark-meta p { margin: 0; font-size: 0.8rem; line-height: 1.7; color: var(--fg-muted); transition: color 0.3s ease; }
+    .featured-ark:hover .ark-meta p { color: var(--fg-default); }
+
+    /* 模块标题 */
+    .section-head { display: flex; align-items: baseline; gap: 1rem; margin: 3rem 0 1.5rem; }
+    .section-head::before { content: ""; width: 24px; height: 3px; background: var(--accent); flex-shrink: 0; transform: translateY(-4px); }
+    .section-head h2 { margin: 0; font-size: 1rem; font-weight: 700; letter-spacing: 0.2em; color: var(--fg-default); }
+    .section-head small { font-size: 0.8rem; color: var(--fg-faint); letter-spacing: 0.15em; }
+
+    /* 岗位匹配优势 */
+    .match-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 3rem; }
+    .match-card { background: var(--bg-surface); padding: 1.5rem; border: 1px solid var(--border-muted); border-radius: 4px; border-top: 3px solid var(--accent); }
+    .match-card h4 { color: var(--fg-default); margin: 0 0 1rem; font-size: 1.1rem; letter-spacing: 0.05em; }
+    .match-card p { margin: 0; font-size: 0.9rem; line-height: 1.8; color: var(--fg-muted); }
+
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: var(--gap); }
+    .card { position: relative; display: flex; flex-direction: column; background: var(--bg-surface); border: 1px solid var(--border-muted); border-radius: 4px; transition: all 250ms ease; overflow: hidden; }
+    .card::before { content: ""; position: absolute; top: -50%; left: 0; width: 100%; height: 50%; background: linear-gradient(to bottom, transparent, rgba(24, 209, 255, 0.1), transparent); z-index: 2; pointer-events: none; transition: top 0.6s ease; }
+    .card:hover { border-color: var(--accent); background: var(--bg-elevated); transform: translateY(-4px); box-shadow: 0 10px 30px var(--accent-glow); }
+    .card:hover::before { top: 100%; }
+    .card::after { content: ""; position: absolute; top: 0; right: 0; border-style: solid; border-width: 0 20px 20px 0; border-color: transparent var(--accent) transparent transparent; opacity: 0.8; transition: opacity 200ms ease; z-index: 3; }
+    .card:hover::after { opacity: 1; }
+    
+    .card-media { position: relative; overflow: hidden; aspect-ratio: 16 / 10; display: flex; align-items: center; justify-content: center; background: var(--bg-media); border-bottom: 1px solid var(--border-muted); color: var(--fg-faint); font-size: 0.8rem; letter-spacing: 0.2em; z-index: 1; }
+    .card-media::before { content: ""; position: absolute; inset: 0; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 255, 255, 0.02) 10px, rgba(255, 255, 255, 0.02) 11px); pointer-events: none; }
+    
+    .card-media.media-gallery { aspect-ratio: 16 / 11; background: radial-gradient(circle at center, #1a1c20 0%, #0a0c0f 100%); gap: 10px; padding: 20px; }
+    .card-media.media-gallery img { position: relative; width: 30%; height: 90%; object-fit: cover; border: 1px solid var(--border-strong); border-radius: 4px; box-shadow: 0 6px 16px rgba(0,0,0,0.8); transition: transform 250ms ease, border-color 250ms ease; z-index: 1; }
+    .card:hover .media-gallery img { transform: translateY(-6px); }
+    .card-media.media-gallery img:nth-child(2) { width: 33%; height: 100%; border-color: var(--accent); z-index: 2; }
+    
+    .card-media.contain { background: #0a0c0f; padding: 0; }
+    .card-media.contain img { position: relative; width: 100%; height: 100%; object-fit: contain; display: block; z-index: 1; }
+
+    .card-media.steam-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; background: #0a0c0f; padding: 2px; overflow: hidden; }
+    .card-media.steam-grid img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 250ms ease, filter 250ms ease; }
+    .card:hover .steam-grid img { transform: scale(1.03); filter: brightness(1.15); }
+    
+    .card-body { flex: 1; display: flex; flex-direction: column; padding: 1.5rem; position: relative; z-index: 3; }
+    .card-id { margin-bottom: 0.6rem; font-size: 0.75rem; color: var(--accent); letter-spacing: 0.2em; font-weight: 600; }
+    .card h3 { margin: 0 0 0.6rem; font-size: 1.25rem; font-weight: 700; letter-spacing: 0.04em; color: var(--fg-default); line-height: 1.4; }
+    .card p { flex: 1; margin: 0 0 1.2rem; font-size: 0.95rem; line-height: 1.8; color: var(--fg-muted); }
+    
+    .tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.2rem; }
+    .tag { padding: 0.3rem 0.6rem; font-size: 0.75rem; letter-spacing: 0.1em; font-weight: 600; color: var(--fg-muted); border: 1px solid var(--border-strong); border-radius: 2px; }
+    .card-link { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; font-weight: 700; letter-spacing: 0.15em; color: var(--accent); border-bottom: 1px solid transparent; transition: border-color 200ms ease; }
+    .card:hover .card-link { border-bottom-color: var(--accent); }
+
+    /* 技能工具 */
+    .skills-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .skill-item { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.2rem; }
+    .skill-item strong { color: var(--fg-default); font-size: 0.9rem; }
+    .skill-item span { color: var(--fg-muted); font-size: 0.9rem; line-height: 1.6; }
+
+    .contact-dossier { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem 2.5rem; margin: 0; padding: 2rem; background: var(--bg-surface); border: 1px solid var(--border-muted); border-radius: 4px; backdrop-filter: blur(6px); }
+    .contact-dossier dt { margin-bottom: 0.5rem; font-size: 0.75rem; letter-spacing: 0.2em; color: var(--fg-faint); }
+    .contact-dossier dd { margin: 0; font-size: 1.05rem; letter-spacing: 0.05em; font-weight: 600; }
+    .contact-dossier dd a { color: var(--accent); border-bottom: 1px solid transparent; transition: border-color 200ms; }
+    .contact-dossier dd a:hover { border-bottom-color: var(--accent); }
+    
+    footer { display: flex; justify-content: space-between; gap: 1rem; margin-top: 4rem; padding-top: 1.5rem; border-top: 1px solid var(--border-muted); font-size: 0.75rem; letter-spacing: 0.15em; color: var(--fg-faint); }
+
+    /* 弹窗样式 */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(5, 5, 8, 0.9); backdrop-filter: blur(8px); z-index: 9999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 250ms ease; }
+    .modal-overlay.active { opacity: 1; pointer-events: auto; }
+    .modal-content { background: #14171c; border: 1px solid var(--border-strong); max-width: 900px; width: 90%; max-height: 85vh; overflow-y: auto; position: relative; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), inset 0 0 0 1px rgba(24, 209, 255, 0.1); transform: translateY(30px); transition: transform 250ms ease; padding: 3.5rem; border-radius: 4px; }
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    .modal-content::-webkit-scrollbar { width: 8px; }
+    .modal-content::-webkit-scrollbar-track { background: transparent; }
+    .modal-content::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+    .modal-close { position: absolute; top: 1.5rem; right: 1.8rem; background: none; border: none; color: var(--fg-muted); font-size: 2rem; cursor: pointer; transition: color 150ms, transform 150ms; line-height: 1; z-index: 10; }
+    .modal-close:hover { color: var(--accent); transform: scale(1.1) rotate(90deg); }
+    
+    .modal-header { margin-bottom: 2.5rem; border-bottom: 1px solid var(--border-muted); padding-bottom: 1.5rem; }
+    .modal-header h2 { margin: 0 0 0.8rem; font-size: 1.8rem; color: var(--fg-default); letter-spacing: 0.05em; }
+    .modal-header .modal-meta { font-size: 0.9rem; color: var(--accent); letter-spacing: 0.15em; font-weight: 600; }
+    
+    .modal-body h4 { color: var(--fg-default); margin: 2.5rem 0 1rem; font-size: 1.15rem; border-left: 3px solid var(--accent); padding-left: 1rem; letter-spacing: 0.05em; }
+    .modal-body p { font-size: 1rem; line-height: 1.9; color: var(--fg-muted); margin: 0 0 1.2rem; }
+    .modal-body ul { font-size: 1rem; line-height: 1.9; color: var(--fg-muted); margin: 0 0 1.5rem; padding-left: 1.5rem; }
+    .modal-body li { margin-bottom: 0.6rem; }
+    .modal-body strong, .modal-body b { color: var(--fg-default); font-weight: 600; }
+    .modal-body > img { width: 100%; border: 1px solid var(--border-muted); border-radius: 4px; margin: 1.5rem 0; display: block; }
+    
+    .modal-body .img-row { display: flex; gap: 1.5rem; margin: 1.5rem 0; justify-content: center; }
+    .modal-body .img-row img { width: auto; max-width: 48%; height: 500px; object-fit: contain; border: 1px solid var(--border-strong); border-radius: 4px; background: #0a0c0f; box-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+
+    /* 弹窗高亮总结框 */
+    .highlight-box {
+      margin-top: 2.5rem;
+      padding: 1.5rem 2rem;
+      background: rgba(255, 216, 0, 0.08);
+      border: 1px solid var(--warning);
+      border-left: 4px solid var(--warning);
+      border-radius: 4px;
+      color: var(--fg-default);
+      font-weight: 700;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      position: relative;
+      box-shadow: 0 4px 20px rgba(255, 216, 0, 0.05);
+      text-align: center;
+    }
+    .highlight-box::before, .highlight-box::after {
+      font-family: Georgia, serif;
+      font-size: 2.5rem;
+      color: var(--warning);
+      position: absolute;
+      opacity: 0.6;
+      line-height: 1;
+    }
+    .highlight-box::before { content: "“"; top: 5px; left: 10px; }
+    .highlight-box::after { content: "”"; bottom: -15px; right: 10px; }
+
+    @media (max-width: 1050px) {
+      .top-section { flex-direction: column; }
+      .featured-ark { flex: 1; width: 100%; }
+      .skills-wrap { grid-template-columns: 1fr; gap: 0; }
+    }
+
+    @media (max-width: 900px) {
+      .scope { flex-direction: column; }
+      .rail { width: 100%; height: auto; position: static; flex-direction: row; align-items: center; gap: 1.5rem; padding: 1.5rem; border-right: none; border-bottom: 1px solid var(--border-muted); }
+      .rail-brand { flex-shrink: 0; margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
+      .rail nav { display: flex; gap: 0.5rem; overflow-x: auto; }
+      .rail nav a { padding: 0.6rem 1rem; border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+      .rail nav a:hover, .rail nav a.active { border-left-color: transparent; border-bottom-color: var(--accent); background: none; }
+      .rail-foot { display: none; }
+      .main { padding: 2rem 1.5rem 4rem; }
+      .hud { flex-direction: column; align-items: flex-start; gap: 1.5rem; }
+      .hud-status { text-align: left; }
+      .hud::after { width: 200px; height: 40px; }
+      .dossier { grid-template-columns: 1fr; }
+      .modal-content { padding: 2rem; width: 95%; }
+      .modal-body .img-row { flex-direction: column; align-items: center; }
+      .modal-body .img-row img { width: 100%; max-width: 100%; height: auto; max-height: 400px; }
+      .modal-header h2 { font-size: 1.5rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="ark-particles"></canvas>
+
+<div class="scope">
+  <aside class="rail">
+    <div>
+      <div class="rail-brand">
+        SDU GAME DESIGN ARCHIVE
+        <strong>DESIGNER FILE</strong>
+      </div>
+      <nav aria-label="主导航">
+        <a href="#about" class="active" data-code="01">DOSSIER / 档案</a>
+        <a href="#match" data-code="02">MATCH / 优势</a>
+        <a href="#projects" data-code="03">PROJECTS / 项目</a>
+        <a href="#skills" data-code="04">SKILLS / 技能</a>
+        <a href="#contact" data-code="05">CONTACT / 联络</a>
+      </nav>
+    </div>
+    <div class="rail-foot">
+      CLEARANCE LV.2<br />
+      INTERN / GAME DESIGN
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="hud">
+      <h1>
+        <span>// GAME DESIGN PORTFOLIO</span>
+        黄格 / HUANG GE
+      </h1>
+      <div class="hud-status">
+        <div><span class="on">●</span> OPEN TO INTERNSHIP</div>
+        <div>游戏策划实习生 / 校招 · 系统 / 数值 / 关卡优先</div>
+        <div class="time-tag">方舟 Lv120 / Steam 模拟经营全成就</div>
+        <div>2028 届 // 1–4 月线下实习</div>
+      </div>
+    </header>
+
+    <section id="about">
+      <div class="top-section">
+        <div class="dossier-wrapper">
+          <dl class="dossier">
+            <div>
+              <dt>NAME / 姓名</dt>
+              <dd>黄格 / HUANG GE</dd>
+            </div>
+            <div>
+              <dt>CONTACT / 联络</dt>
+              <dd class="highlight">183 5782 9325</dd>
+            </div>
+            <div>
+              <dt>AFFILIATION / 院校</dt>
+              <dd class="school-highlight">
+                山东大学 <span>985 / 211</span>
+              </dd>
+            </div>
+            <div>
+              <dt>MAJOR / 专业</dt>
+              <dd>机器人工程 · 本科 2023-2028</dd>
+            </div>
+            <div>
+              <dt>COURSES / 主修课程</dt>
+              <dd>数据结构、概率论、数理统计、机器人学</dd>
+            </div>
+            <div>
+              <dt>EMAIL / 邮箱</dt>
+              <dd>1211221310@qq.com</dd>
+            </div>
+            <div>
+              <dt>AVAILABILITY / 实习</dt>
+              <dd class="highlight">1–4 月 · 全职线下</dd>
+            </div>
+            <div>
+              <dt>TARGET / 方向</dt>
+              <dd class="highlight">系统 / 数值 / 关卡</dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- 明日方舟卡片 -->
+        <div class="featured-ark">
+          <div class="ark-img-wrapper">
+            <img src="./images/arknights-profile.webp" alt="明日方舟个人名片" />
+          </div>
+          <div class="ark-meta">
+            <div class="ark-tags">
+              <span class="tag" style="color:var(--accent); border-color:var(--accent);">入职 4.5 年 / Lv120</span>
+              <span class="tag">干员 396 / 主线全通</span>
+              <span class="tag">深谙养成与配队</span>
+            </div>
+            <p>《明日方舟》开服级别深度玩家，2019-11-18 入职。深谙长线养成与数值成长曲线。</p>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 岗位匹配优势 -->
+    <section id="match">
+      <div class="section-head">
+        <h2>MATCH ADVANTAGE</h2>
+        <small>岗位匹配优势</small>
+      </div>
+      <div class="match-grid">
+        <div class="match-card">
+          <h4>系统 / 数值拆解能力</h4>
+          <p>明日方舟 Lv120满级、396 干员、主线全通，深谙长线养成与配队；Steam 模拟经营 400h+（开罗系列 10+ 款全成就），能精准拆解资源循环、成长曲线与概率期望。</p>
+        </div>
+        <div class="match-card">
+          <h4>策划文档与落地</h4>
+          <p>可输出策划案、拆解文档、竞品分析、关卡设计说明、剧情配置表；新生杯作为队长负责商业计划书与 PPT 获优胜奖，青苗杯获三等奖。</p>
+        </div>
+        <div class="match-card">
+          <h4>AI 工具与开发协作</h4>
+          <p>独立完成「查手机」小游戏系统框架与数值设计，使用 Coze 辅助开发；小程序项目输出需求文档与测试记录并获三等奖，具备跨职能沟通能力。</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <div class="section-head">
+        <h2>PROJECT ARCHIVE</h2>
+        <small>点击卡片查看详细拆解 / 按时间倒序</small>
+      </div>
+
+      <div class="grid">
+        <article class="card" data-project="p1">
+          <div class="card-media media-gallery">
+            <img src="./images/game-3.webp" alt="选择搜查位置界面" />
+            <img src="./images/game-1.webp" alt="一周工作总结界面" />
+            <img src="./images/game-2.webp" alt="搜查弹窗界面" />
+          </div>
+          <div class="card-body">
+            <div class="card-id">FILE-001 // 个人项目</div>
+            <h3>「查手机」模拟经营小游戏</h3>
+            <p>核心系统：体力分配（上限 15 点）、校风管理（查扣降校风，影响结局）、概率博弈（不同搜查点概率×1.0~x1.3）与绩效结算（扣手机数与奖金挂钩）。</p>
+            <div class="tags">
+              <span class="tag">Coze辅助</span>
+              <span class="tag">系统框架</span>
+              <span class="tag">数值设计</span>
+            </div>
+            <div class="card-link">OPEN DOSSIER →</div>
+          </div>
+        </article>
+
+        <article class="card" data-project="p2">
+          <div class="card-media contain">
+            <img src="./images/cert-2.webp" alt="新生杯创业计划竞赛优胜奖证书" />
+          </div>
+          <div class="card-body">
+            <div class="card-id">FILE-002 // 2024.01</div>
+            <h3>新生杯创业计划竞赛 · 队长</h3>
+            <p>项目：“温环护老”——基于 PEDOT:pss 柔性热电薄膜的助老手环。作为队长负责统筹、竞品调研与商业计划书撰写，带领团队获优胜奖。</p>
+            <div class="tags">
+              <span class="tag" style="color:var(--accent); border-color:var(--accent);">队长带队</span>
+              <span class="tag">竞品调研</span>
+              <span class="tag">优胜奖</span>
+            </div>
+            <div class="card-link">OPEN DOSSIER →</div>
+          </div>
+        </article>
+
+        <article class="card" data-project="p3">
+          <div class="card-media contain">
+            <img src="./images/cert-3.webp" alt="青苗计划大学生创业计划大赛三等奖证书" />
+          </div>
+          <div class="card-body">
+            <div class="card-id">FILE-003 // 2023.11</div>
+            <h3>青苗计划双创训练营 · 成员</h3>
+            <p>信息技术赛道：负责“溯光透明供应链平台”项目的美工模块与部分方案撰写，团队获三等奖。</p>
+            <div class="tags">
+              <span class="tag">美工设计</span>
+              <span class="tag">方案撰写</span>
+              <span class="tag">三等奖</span>
+            </div>
+            <div class="card-link">OPEN DOSSIER →</div>
+          </div>
+        </article>
+
+        <article class="card" data-project="p4">
+          <div class="card-media contain">
+            <img src="./images/cert-1.webp" alt="东北亚学院2024年寒假社会实践院级三等奖证书" />
+          </div>
+          <div class="card-body">
+            <div class="card-id">FILE-004 // 2024.04</div>
+            <h3>“dd搭搭”小程序开发 · 社会实践</h3>
+            <p>基于“搭子文化”，面向大学生群体打造的同好社交平台。配合队长完成竞品调研与方案策划，负责需求分析、文档撰写，并亲自参与部分程序功能实现。</p>
+            <div class="tags">
+              <span class="tag">搭子文化</span>
+              <span class="tag">需求分析</span>
+              <span class="tag">程序开发</span>
+            </div>
+            <div class="card-link">OPEN DOSSIER →</div>
+          </div>
+        </article>
+
+        <!-- 院科创中心 负责人 -->
+        <article class="card" data-project="p6">
+          <div class="card-media" style="background: radial-gradient(circle at center, #1a1c20 0%, #0a0c0f 100%); color: var(--accent);">
+            <div style="font-weight: bold; font-size: 1.5rem; letter-spacing: 0.2em;">科创中心 负责人</div>
+          </div>
+          <div class="card-body">
+            <div class="card-id">FILE-005 // 团队管理</div>
+            <h3>院科创中心 · 负责人</h3>
+            <p>统筹规划院级科创活动，主导落地“玛迦山学术论坛”与“华为数通拔尖人才基地揭牌仪式”，带领 10 人团队完成策划与复盘。</p>
+            <div class="tags">
+              <span class="tag">活动统筹</span>
+              <span class="tag">团队管理</span>
+              <span class="tag">跨部门协作</span>
+            </div>
+            <div class="card-link">OPEN DOSSIER →</div>
+          </div>
+        </article>
+
+        <article class="card" data-project="p5">
+          <div class="card-media steam-grid">
+            <img src="./images/steam-1.webp" alt="星露谷物语与苏丹的游戏时长" />
+            <img src="./images/steam-2.webp" alt="开罗游戏全成就" />
+            <img src="./images/steam-3.webp" alt="弹丸论破等游戏时长" />
+            <img src="./images/steam-4.webp" alt="更多开罗游戏成就" />
+          </div>
+          <div class="card-body">
+            <div class="card-id">FILE-006 // GAMING EXPERIENCE</div>
+            <h3>游戏经历与品类拆解</h3>
+            <p>极度偏好策略与模拟经营类。开罗系列 400h+（10+全成就）、星露谷物语 258.5h、苏丹的游戏 212h。习惯从玩家体验反推设计意图，深谙资源循环。</p>
+            <div class="tags">
+              <span class="tag" style="color:var(--warning); border-color:var(--warning);">PC 1000h+</span>
+              <span class="tag">开罗 400h+</span>
+              <span class="tag">全成就 10+</span>
+            </div>
+            <div class="card-link">OPEN DOSSIER →</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- 技能工具 -->
+    <section id="skills">
+      <div class="section-head">
+        <h2>SKILLS TOOLKIT</h2>
+        <small>技能工具</small>
+      </div>
+      <div class="skills-wrap">
+        <div class="skill-item">
+          <strong>文档能力</strong>
+          <span>策划案、拆解文档、竞品分析、关卡设计说明、剧情配置表</span>
+        </div>
+        <div class="skill-item">
+          <strong>策划工具</strong>
+          <span><b>Excel</b>（熟练搭建数值体系、配置表公式与推演）｜ <b>Figma</b>（绘制交互线框图、UI原型设计与排版）</span>
+        </div>
+        <div class="skill-item">
+          <strong style="color: var(--accent); font-size: 1rem;">AI 工具（核心优势）</strong>
+          <span>熟练运用<b>提示词工程（Prompt Engineering）</b>精准控制 AI 产出，能使用 Coze 独立搭建复杂小游戏逻辑与数值框架。保持极高的技术敏锐度，<b>乐于学习并快速掌握各类新型 AI 工具</b>（文本/图像/代码生成等）并将其融入工作流，大幅提升策划与落地执行效率。</span>
+        </div>
+        <div class="skill-item">
+          <strong>语言能力</strong>
+          <span>普通话二甲，英语 CET-4，备考雅思中，可阅读英文 GDC 资料与游戏设计文档</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact">
+      <div class="section-head">
+        <h2>CONTACT CHANNEL</h2>
+        <small>联络通道</small>
+      </div>
+      <dl class="contact-dossier">
+        <div>
+          <dt>PHONE / 电话</dt>
+          <dd><a href="tel:18357829325">183 5782 9325</a></dd>
+        </div>
+        <div>
+          <dt>EMAIL / 邮箱</dt>
+          <dd><a href="mailto:1211221310@qq.com">1211221310@qq.com</a></dd>
+        </div>
+        <div>
+          <dt>PORTFOLIO / 作品</dt>
+          <dd><a href="https://veeel012.github.io/huangge-portfolio/" target="_blank" rel="noopener">「查手机」小游戏游玩链接</a></dd>
+        </div>
+      </dl>
+    </section>
+
+    <footer>
+      <span>HUANG GE // GAME DESIGN // SDU</span>
+      <span>NO GAME ASSETS USED</span>
+    </footer>
+  </main>
+</div>
+
+<div class="modal-overlay" id="projectModal">
+  <div class="modal-content">
+    <button class="modal-close" id="closeModal">×</button>
+    <div id="modalDynamicContent"></div>
+  </div>
+</div>
+
+<script>
+  // --- 1. 导航高亮 ---
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail nav a'));
+    var sections = links.map(function (a) { return document.querySelector(a.getAttribute('href')); }).filter(Boolean);
+    if (!sections.length) return;
+
+    function updateActive() {
+      var scrollY = window.scrollY;
+      var maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+      if (scrollY >= maxScroll - 4) {
+        var last = sections[sections.length - 1];
+        links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + last.id); });
+        return;
+      }
+      var marker = scrollY + window.innerHeight * 0.3;
+      var current = sections[0];
+      sections.forEach(function (s) {
+        var top = s.getBoundingClientRect().top + scrollY;
+        if (top <= marker) current = s;
+      });
+      links.forEach(function (a) { a.classList.toggle('active', a.getAttribute('href') === '#' + current.id); });
+    }
+    window.addEventListener('scroll', updateActive, { passive: true });
+    window.addEventListener('resize', updateActive);
+    updateActive();
+  })();
+
+  // --- 2. 弹窗控制 ---
+  (function() {
+    const projects = {
+      p1: {
+        title: "「查手机」模拟经营小游戏",
+        meta: "FILE-001 // 独立策划 // 个人项目",
+        content: `
+          <div class="modal-body">
+            <h4>核心系统与数值</h4>
+            <ul>
+              <li><b>体力分配</b>：上限 15 点。玩家需在“查手机”（消耗 2 体力，收益高但风险高）、“开年级大会”（消耗 3 体力，概率-20%）和“休息”（恢复 4 体力）之间做策略选择。</li>
+              <li><b>校风管理</b>：搜查会降低校风，校风过低会影响最终结局与评价。</li>
+              <li><b>概率博弈</b>：不同搜查点（桌洞、书包、垃圾桶）有不同的基础概率与收益期望（概率×1.0~x1.3）。</li>
+              <li><b>绩效结算</b>：每周扣手机数与奖金挂钩，根据玩家策略结算称号（如“铁血教头”）。</li>
+            </ul>
+
+            <h4>关键界面拆解</h4>
+            <div class="img-row">
+              <img src="./images/game-3.webp" alt="搜查位置选择">
+              <img src="./images/game-5.webp" alt="行动选择">
+            </div>
+            <div class="img-row">
+              <img src="./images/game-1.webp" alt="结算界面">
+              <img src="./images/game-2.webp" alt="查口袋弹窗">
+            </div>
+          </div>
+        `
+      },
+      p2: {
+        title: "新生杯创业计划竞赛 · 队长",
+        meta: "FILE-002 // 2024.01 // 队长带队",
+        content: `
+          <div class="modal-body">
+            <h4>项目背景</h4>
+            <p>项目为“温环护老”——基于 PEDOT:pss 柔性热电薄膜的助老手环。作为<b>队长</b>，我负责团队统筹、竞品调研与商业计划书的整体撰写。</p>
+            
+            <h4>团队竞争优势</h4>
+            <ul>
+              <li><b>技术差异化（无感佩戴）</b>：市面同类产品多采用硬质传感器，老年人佩戴不适。我们团队研发的 PEDOT:pss 柔性热电薄膜，主打“无感佩戴”，从硬件材质上解决了痛点。</li>
+              <li><b>精准的用户洞察</b>：通过用户调研发现，老年人往往“不敢戴、不愿戴”智能设备。我们的产品外观设计更贴近传统配饰，降低老年人的心理抗拒感。</li>
+              <li><b>跨学科协同落地</b>：作为队长，我整合了技术研发、商科分析与设计背景的团队成员，将技术语言翻译为商业语言，形成了完整的商业闭环方案。</li>
+            </ul>
+
+            <h4>我的核心职责</h4>
+            <ul>
+              <li><b>团队统筹与分工</b>：制定项目推进时间表，协调跨专业团队成员的任务分配。</li>
+              <li><b>竞品拆解与调研</b>：分析市面上老人健康监测手环的价格、功能与用户痛点。</li>
+              <li><b>商业计划书与答辩</b>：主刀撰写完整的商业计划书，统筹编排答辩 PPT，并作为主讲人完成路演。</li>
+              <li>最终带领团队斩获山东大学第二届“新生杯”<b>优胜奖</b>。</li>
+            </ul>
+          </div>
+        `
+      },
+      p3: {
+        title: "青苗计划双创训练营 · 溯光平台",
+        meta: "FILE-003 // 2023.11 // 团队项目（美工/协作）",
+        content: `
+          <div class="modal-body">
+            <h4>项目职责</h4>
+            <p>项目为“溯光透明供应链平台”（信息技术赛道），我主要负责<b>美工模块与跨专业协作</b>。</p>
+            
+            <h4>工作内容</h4>
+            <ul>
+              <li><b>视觉设计</b>：负责了项目路演 PPT 的整体视觉包装与排版设计，以及部分产品原型的 UI 界面绘制。</li>
+              <li><b>跨专业沟通</b>：团队包含计算机、商科与设计背景的同学。我负责在中间协调，将技术的语言翻译为商业语言，保障项目路演顺利推进。</li>
+              <li><b>项目成果</b>：团队获第三届“青苗计划”双创训练营结业考核三等奖。</li>
+            </ul>
+
+            <h4>收获与沉淀</h4>
+            <p>深刻理解了研发团队的协作模式。游戏策划需要频繁与程序、美术沟通，这段经历让我知道如何用对方能听懂的方式（或者通过直观的图文文档）去表达诉求。</p>
+          </div>
+        `
+      },
+      p4: {
+        title: "“dd搭搭”小程序开发 & 社会实践",
+        meta: "FILE-004 // 2024.01-2024.04",
+        content: `
+          <div class="modal-body">
+            <h4>项目背景</h4>
+            <p>“dd搭搭”是一款基于当代大学生“搭子文化”衍生的同好社交小程序。致力于帮助同学们高效寻找“饭搭子”、“学习搭子”或“旅游搭子”，解决校园内的社交需求。</p>
+
+            <h4>社会实践调研（dd 搭搭调研团）</h4>
+            <ul>
+              <li><b>用户调研与策划</b>：配合队长要求，针对大学生“搭子”社交痛点展开实地调研与需求分析，参与产品核心玩法与社交机制的方案策划。</li>
+              <li><b>报告撰写与产出</b>：整理分析调研数据，协助输出高质量调研报告，表现优异，团队最终获评院级<b>三等奖</b>。</li>
+            </ul>
+
+            <h4>校园小程序开发</h4>
+            <ul>
+              <li><b>需求与文档</b>：负责梳理“dd搭搭”的核心业务链路，输出需求分析文档及关键页面的交互流程图与线框图。</li>
+              <li><b>功能落地实现</b>：在开发环节，不仅负责测试跟进，还<b>亲自参与实现了部分程序功能</b>，协助开发团队完成版本迭代，项目最终荣获<b>三等奖</b>。</li>
+            </ul>
+          </div>
+        `
+      },
+      p6: {
+        title: "院科创中心 · 负责人",
+        meta: "FILE-005 // 团队管理与大型活动统筹",
+        content: `
+          <div class="modal-body">
+            <h4>职责与成就</h4>
+            <ul>
+              <li>作为负责人，统筹规划院级科技创新类活动，把控整体方向与进度。</li>
+              <li><b>大型活动落地</b>：主导并成功落地了“<b>玛迦山学术论坛</b>”与“<b>华为数通拔尖人才基地揭牌仪式</b>”等院级重点活动，负责全流程策划与现场执行。</li>
+              <li><b>团队与进度管理</b>：协调 10 人核心团队，合理分配任务并跟进进度，完成活动策划、嘉宾对接、宣传推广与活动后的复盘总结。</li>
+              <li>锻炼了极强的跨部门沟通协作能力与高强度项目进度管理能力，验证了自身将策划案落地的执行力。</li>
+            </ul>
+          </div>
+        `
+      },
+      p5: {
+        title: "游戏经历与品类拆解",
+        meta: "FILE-006 // 游戏阅历与拆解",
+        content: `
+          <div class="modal-body">
+            <h4>品类偏好与积累</h4>
+            <p>我是一个重度模拟经营与 Roguelike 玩家，PC 时长 1000h+，主机 500h+。尤其热爱开罗系列（已全成就 10 款）、星露谷物语、苏丹的游戏等。我习惯在玩游戏时进行“反推拆解”。</p>
+
+            <h4>拆解案例：星露谷物语的“时间与资源”循环</h4>
+            <p>星露谷的核心乐趣其实来源于“一天的时间限制”。玩家早上 6 点起床，凌晨 2 点必须睡觉。体力（水/食物）和时间（上午/下午/晚上）是两套互相制约的资源。</p>
+            <p>玩家必须在“种地、下矿、钓鱼、NPC 社交”中做取舍，这本质上是一种极高密度的“机会成本管理”。这种高密度的资源博弈，让原本休闲的种田过程变得非常“上头”。</p>
+
+            <h4>拆解案例：开罗系列的“数值膨胀”</h4>
+            <p>开罗游戏的套路是“简单的像素画风 + 极深的数值反馈”。比如便利店开业日记，游戏不断通过“客流量增加 -> 解锁新货架 -> 收入增加”的短频快反馈，刺激多巴胺分泌。其数值曲线通常在中期会出现陡峭的膨胀，让玩家体验到经营的爽感。</p>
+
+            <div class="highlight-box">
+              我不仅是体验，更是把这种推导过程写在文档里，转化为自己的系统设计直觉。
+            </div>
+          </div>
+        `
+      }
+    };
+
+    const modal = document.getElementById('projectModal');
+    const content = document.getElementById('modalDynamicContent');
+    const closeBtn = document.getElementById('closeModal');
+    const cards = document.querySelectorAll('.card');
+
+    cards.forEach(card => {
+      card.addEventListener('click', function() {
+        const id = this.getAttribute('data-project');
+        const data = projects[id];
+        if (data) {
+          content.innerHTML = `
+            <div class="modal-header">
+              <div class="modal-meta">${data.meta}</div>
+              <h2>${data.title}</h2>
+            </div>
+            ${data.content}
+          `;
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          modal.querySelector('.modal-content').scrollTop = 0;
+        }
+      });
+    });
+
+    function closeModal() {
+      modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function(e) {
+      if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
+    });
+  })();
+
+  // --- 3. 强化版粒子系统 ---
+  (function() {
+    const canvas = document.getElementById('ark-particles');
+    const ctx = canvas.getContext('2d');
+    let width, height;
+    let particles = [];
+    const particleCount = window.innerWidth < 768 ? 50 : 120; 
+    const connectionDistance = 160; 
+    const mouse = { x: null, y: null, radius: 180 };
+
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    });
+    window.addEventListener('mouseout', () => {
+      mouse.x = null;
+      mouse.y = null;
+    });
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Particle {
+      constructor() {
+        this.reset();
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = height + Math.random() * 100;
+        this.size = Math.random() * 3 + 1; 
+        this.speedY = Math.random() * 0.5 + 0.2; 
+        this.speedX = Math.random() * 0.6 - 0.3; 
+        this.alpha = Math.random() * 0.5 + 0.2; 
+        this.color = Math.random() > 0.7 ? '255, 255, 255' : '24, 209, 255';
+      }
+      update() {
+        this.y -= this.speedY;
+        this.x += this.speedX;
+        if (mouse.x != null && mouse.y != null) {
+          let dx = mouse.x - this.x;
+          let dy = mouse.y - this.y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < mouse.radius) {
+            let force = (mouse.radius - distance) / mouse.radius;
+            this.x -= (dx / distance) * force * 3; 
+            this.y -= (dy / distance) * force * 3;
+          }
+        }
+        if (this.y < -10 || this.x < -10 || this.x > width + 10) this.reset();
+      }
+      draw() {
+        ctx.fillStyle = `rgba(${this.color}, ${this.alpha})`;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = `rgba(${this.color}, 0.8)`;
+        ctx.fillRect(this.x, this.y, this.size, this.size);
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) particles.push(new Particle());
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          let dx = particles[i].x - particles[j].x;
+          let dy = particles[i].y - particles[j].y;
+          let distance = Math.sqrt(dx * dx + dy * dy);
+          if (distance < connectionDistance) {
+            let opacity = 1 - (distance / connectionDistance);
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(24, 209, 255, ${opacity * 0.35})`; 
+            ctx.lineWidth = 0.8; 
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+      particles.forEach(p => {
+        p.update();
+        p.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+    animate();
+  })();
+</script>
+</body>
+</html>
